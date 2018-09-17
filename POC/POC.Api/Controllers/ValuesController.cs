@@ -2,19 +2,32 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using POC.Api.Model;
 
 namespace POC.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class ValuesController : BaseController
     {
+        #region private members
+
+        #endregion
+
+        public ValuesController(IMapper mapper) :base(mapper)
+        {
+        }
+
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult Get()
         {
-            return new string[] { "value1", "value2" };
+            var city = new City { Name = "Toronto"};
+            var county = _mapper.Map<County>(city);
+
+            return Ok(county);
         }
 
         // GET api/values/5
