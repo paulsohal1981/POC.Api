@@ -12,7 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace POC.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 
     public class AuthController : BaseController
     {

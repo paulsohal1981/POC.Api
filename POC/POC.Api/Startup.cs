@@ -65,7 +65,9 @@ namespace POC.Api
 
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            
+
+            services.AddApiVersioning();
+
             // Configure AutoMapper and assert that our configuration is valid.
             services.AddAutoMapper();
         }
