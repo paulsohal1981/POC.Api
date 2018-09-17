@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using POC.Api.Model;
+using POC.Core.Logging;
 
 namespace POC.Api.Controllers
 {
@@ -20,6 +21,7 @@ namespace POC.Api.Controllers
         {
         }
 
+        [TrackUsage("API","API Layer","Get Values")]
         // GET api/values
         [HttpGet]
         public ActionResult Get()

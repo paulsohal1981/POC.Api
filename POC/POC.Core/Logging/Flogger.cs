@@ -1,9 +1,8 @@
 ﻿using Serilog;
 using Serilog.Events;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Text;
+using System.Data.SqlClient;
 
 namespace POC.Core.Logging
 {
@@ -24,21 +23,19 @@ namespace POC.Core.Logging
         static Flogger()
         {
             _perfLogger = new LoggerConfiguration()
-                .WriteTo.File("d:\\temp\\loggingPoc\\perf.txt")
+                .WriteTo.File(path: @"D:\Log\POC\perf.txt")
                 .CreateLogger();
 
             _usageLogger = new LoggerConfiguration()
-                .WriteTo.File("d:\\temp\\loggingPoc\\usage.txt")
+                .WriteTo.File(path: @"D:\Log\POC\usage.txt")
                 .CreateLogger();
-
 
             _errorLogger = new LoggerConfiguration()
-                .WriteTo.File("d:\\temp\\loggingPoc\\error.txt")
+                .WriteTo.File(path: @"D:\Log\POC\error.txt")
                 .CreateLogger();
 
-
             _diagnosticLogger = new LoggerConfiguration()
-                .WriteTo.File("d:\\temp\\loggingPoc\\diagnostic.txt")
+                .WriteTo.File(path: @"D:\Log\POC\diagnostic.txt")
                 .CreateLogger();
 
         }
@@ -56,17 +53,60 @@ namespace POC.Core.Logging
         }
         public static void WriteError(LogDetail infoToLog)
         {
+            if (infoToLog.Exception != null)
+            {
+                var procName = FindProcName(infoToLog.Exception);
+                infoToLog.Location = string.IsNullOrEmpty(procName)
+                    ? infoToLog.Location
+                    : procName;
+                infoToLog.Message = GetMessageFromException(infoToLog.Exception);
+            }
+
             _errorLogger.Write(LogEventLevel.Information, "{@LogDetail}", infoToLog);
         }
-        public static void WriteWriteDiagnostic(LogDetail infoToLog)
+        public static void WriteDiagnostic(LogDetail infoToLog)
         {
-            var writeDiagnostics = Convert.ToBoolean(ConfigurationManager.AppSettings["EnableDiagnostics"]);
+            var writeDiagnostics =
+                Convert.ToBoolean(Environment.GetEnvironmentVariable("DIAGNOSTICS_ON"));
             if (!writeDiagnostics)
-            {
                 return;
-            }
 
             _diagnosticLogger.Write(LogEventLevel.Information, "{@LogDetail}", infoToLog);
         }
+
+
+        #region Private Helpers
+
+
+        private static string GetMessageFromException(Exception ex)
+        {
+            if (ex.InnerException != null)
+                return GetMessageFromException(ex.InnerException);
+
+            return ex.Message;
+        }
+
+        private static string FindProcName(Exception ex)
+        {
+            var sqlEx = ex as SqlException;
+            if (sqlEx != null)
+            {
+                var procName = sqlEx.Procedure;
+                if (!string.IsNullOrEmpty(procName))
+                    return procName;
+            }
+
+            if (!string.IsNullOrEmpty((string)ex.Data["Procedure"]))
+            {
+                return (string)ex.Data["Procedure"];
+            }
+
+            if (ex.InnerException != null)
+                return FindProcName(ex.InnerException);
+
+            return null;
+        }
+
+        #endregion
     }
 }

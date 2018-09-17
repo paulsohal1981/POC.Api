@@ -26,7 +26,7 @@ namespace POC.Api.Controllers
         [HttpPost("token")]
         public IActionResult Token()
         {
-
+            throw new Exception("Holy COW");
 
             var claims = new Claim[] {new Claim(ClaimTypes.Name, "Paul") };
             //TODO: This comes from a config file. 

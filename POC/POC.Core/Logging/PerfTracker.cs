@@ -17,6 +17,22 @@ namespace POC.Core.Logging
 
         #region ctor
 
+        public PerfTracker(LogDetail details)
+        {
+            _sw = Stopwatch.StartNew();
+            _infoToLog = details;
+
+            var beginTime = DateTime.Now;
+            if (_infoToLog.AdditionalInfo == null)
+                _infoToLog.AdditionalInfo = new Dictionary<string, object>()
+                {
+                    { "Started", beginTime.ToString(CultureInfo.InvariantCulture) }
+                };
+            else
+                _infoToLog.AdditionalInfo.Add(
+                    "Started", beginTime.ToString(CultureInfo.InvariantCulture));
+        }
+
         public PerfTracker(string name, string userId, string userName, string location, string product, string layer)
         {
             _sw = Stopwatch.StartNew();
