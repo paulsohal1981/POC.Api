@@ -18,6 +18,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
+using POC.Api.Infrastructure.Filters;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace POC.Api
 {
@@ -66,10 +68,30 @@ namespace POC.Api
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            // Add default versioning
             services.AddApiVersioning();
 
             // Configure AutoMapper and assert that our configuration is valid.
             services.AddAutoMapper();
+
+            // Add Swagger API documentation generator
+            services.AddSwaggerGen(c => {
+                c.SwaggerDoc("v1", new Info { Title = "POC API", Version = "v1" });
+                //var authority = Environment.GetEnvironmentVariable("AUTHORITY");
+                //c.AddSecurityDefinition("oauth2", new OAuth2Scheme
+                //{
+                //    Type = "oauth2",
+                //    Flow = "implicit",
+                //    AuthorizationUrl = $"{authority}/connect/authorize",
+                //    Scopes = new Dictionary<string, string>
+                //    {
+                //        { "api", "Access to the API" },
+                //    }
+                //});
+
+                c.OperationFilter<SwaggerSecurityOperationFilter>("api");
+
+            });
         }
 
 
@@ -86,11 +108,19 @@ namespace POC.Api
                 app.UseHsts();
             }
 
+            //Use Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(c => {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "POC API");
+            });
+
             app.UseAuthentication();
 
             app.UseHttpsRedirection();
 
             app.UseStatusCodePages();
+
+
 
             //Add Auto mapper
             AutoMapper.Mapper.Initialize(cfg => {

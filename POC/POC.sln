@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.Api", "POC.Api\POC.Api.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.Data", "POC.Data\POC.Data.csproj", "{66BDF2B3-E230-436B-AE94-CF61545ECDDB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.Core", "POC.Core\POC.Core.csproj", "{D62640DC-4943-47CE-8D56-08B9BABE63AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{66BDF2B3-E230-436B-AE94-CF61545ECDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66BDF2B3-E230-436B-AE94-CF61545ECDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66BDF2B3-E230-436B-AE94-CF61545ECDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D62640DC-4943-47CE-8D56-08B9BABE63AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D62640DC-4943-47CE-8D56-08B9BABE63AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D62640DC-4943-47CE-8D56-08B9BABE63AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D62640DC-4943-47CE-8D56-08B9BABE63AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
