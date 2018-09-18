@@ -41,41 +41,9 @@ namespace POC.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //TODO: This comes from a config file. 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("fasfsadfasdfsdfasdfasdfsd"));
+            ConfigureJwtAuthService(services);
 
-            //Configure Authentication
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options => {  //Options should match what's in the auth controller
-                    options.TokenValidationParameters = new TokenValidationParameters {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = "mysite.com",
-                        ValidAudience = "mysite.com",
-                        IssuerSigningKey = key
-                    };
-                });
-
-            services.AddMvc(config => {
-                // Make authentication compulsory across the board (i.e. shut
-                // down EVERYTHING unless explicitly opened up).
-                var policy = new AuthorizationPolicyBuilder()
-                          .RequireAuthenticatedUser()
-                          .Build();
-                config.Filters.Add(new AuthorizeFilter(policy));
-
-                //Add Performance Filter
-                config.Filters.Add(new TrackPerformanceFilter("API", "Core API"));
-            })
-                .AddMvcOptions(o => {
-                    //Output formatter to accept a response serialization as xml.  Json is already included.
-                    o.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
-                })
-                .AddJsonOptions(o => {
-
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            ConfigureAddMVC(services);
 
             // Add default versioning
             services.AddApiVersioning();
@@ -84,23 +52,8 @@ namespace POC.Api
             services.AddAutoMapper();
 
             // Add Swagger API documentation generator
-            services.AddSwaggerGen(c => {
-                c.SwaggerDoc("v1", new Info { Title = "POC API", Version = "v1" });
-                //var authority = Environment.GetEnvironmentVariable("AUTHORITY");
-                //c.AddSecurityDefinition("oauth2", new OAuth2Scheme
-                //{
-                //    Type = "oauth2",
-                //    Flow = "implicit",
-                //    AuthorizationUrl = $"{authority}/connect/authorize",
-                //    Scopes = new Dictionary<string, string>
-                //    {
-                //        { "api", "Access to the API" },
-                //    }
-                //});
+            ConfigureAddSwagger(services);
 
-                c.OperationFilter<SwaggerSecurityOperationFilter>("api");
-
-            });
         }
 
 
@@ -161,5 +114,90 @@ namespace POC.Api
 
             app.UseMvc();
         }
+
+
+        #region private helpers
+
+        /// <summary>
+        /// Add MVC
+        /// </summary>
+        /// <param name="services"></param>
+        private void ConfigureAddMVC(IServiceCollection services)
+        {
+            services.AddMvc(config => {
+                // Make authentication compulsory across the board (i.e. shut
+                // down EVERYTHING unless explicitly opened up).
+                var policy = new AuthorizationPolicyBuilder()
+                          .RequireAuthenticatedUser()
+                          .Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+
+                //Add Performance Filter
+                config.Filters.Add(new TrackPerformanceFilter("API", "Core API"));
+            })
+            .AddMvcOptions(o => {
+                //Output formatter to accept a response serialization as xml.  Json is already included.
+                o.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
+            })
+            .AddJsonOptions(o => {
+
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+        }
+
+        /// <summary>
+        /// Configure JWT Auth Service
+        /// </summary>
+        /// <param name="services"></param>
+        private void ConfigureJwtAuthService(IServiceCollection services)
+        {
+
+            var audienceConfig = Configuration.GetSection("JWTAuth");
+            var symmetricKeyAsBase64 = audienceConfig["Secret"];
+            var keyByteArray = Encoding.ASCII.GetBytes(symmetricKeyAsBase64);
+            var signingKey = new SymmetricSecurityKey(keyByteArray);
+            var validIssuer = audienceConfig["Issuer"];
+            var ValidAudience = audienceConfig["Audience"];
+
+            //Configure Authentication
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => {  //Options should match what's in the auth controller
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = validIssuer,
+                        ValidAudience = ValidAudience,
+                        IssuerSigningKey = signingKey
+                    };
+                });
+        }
+
+        /// <summary>
+        /// Add and configure swagger service
+        /// </summary>
+        /// <param name="services"></param>
+        private void ConfigureAddSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c => {
+                c.SwaggerDoc("v1", new Info { Title = "POC API", Version = "v1" });
+                //var authority = Environment.GetEnvironmentVariable("AUTHORITY");
+                //c.AddSecurityDefinition("oauth2", new OAuth2Scheme
+                //{
+                //    Type = "oauth2",
+                //    Flow = "implicit",
+                //    AuthorizationUrl = $"{authority}/connect/authorize",
+                //    Scopes = new Dictionary<string, string>
+                //    {
+                //        { "api", "Access to the API" },
+                //    }
+                //});
+
+                c.OperationFilter<SwaggerSecurityOperationFilter>("api");
+
+            });
+        }
+        #endregion
     }
 }
